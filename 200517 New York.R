@@ -62,8 +62,8 @@ nyc %>%
                          # rainbow(7, rev = TRUE, start=0, end=0.7))
                          # wes_palette("Zissou1", 7, type = "continuous"))
 
-{ggplot(nyc) + geom_density(aes(fill=region,x=density,weight=value),line=0,alpha=0.2) +
-    scale_x_log10()} %>% ggplotly()
+{ggplot(nyc) + geom_density(aes(fill=region,x=density,weight=value),color=NA,alpha=0.4) +
+    scale_x_log10()} #%>% ggplotly()
 #1. Fix scale so that plot_ly shows original value. Also, stop scientific notation
 
 
