@@ -32,7 +32,9 @@ nyc_counties <- data.frame(county = c("36005", "36047", "36061", "36081", #Centr
                                       "MSA", "MSA",
                                       "MSA", "MSA", "MSA", "MSA",
                                       "MSA", "MSA", "MSA", "MSA", "MSA", "MSA",
-                                      "CSA", "CSA", "CSA", "CSA", "CSA", "CSA", "CSA", "CSA"))
+                                      "CSA", "CSA", "CSA", "CSA", "CSA", "CSA", "CSA", "CSA"),
+                           stringsAsFactors = FALSE) %>%
+  mutate(region = factor(region, levels=c("CSA","MSA","Division","NYC")))
 
 #Rail
 url <- "http://www2.census.gov/geo/tiger/TIGER2015/RAILS/tl_2015_us_rails.zip"
@@ -62,7 +64,7 @@ nyc %>%
                          # rainbow(7, rev = TRUE, start=0, end=0.7))
                          # wes_palette("Zissou1", 7, type = "continuous"))
 
-{ggplot(nyc) + geom_density(aes(fill=region,x=density,weight=value),color=NA,alpha=0.4) +
+{ggplot(nyc) + geom_density(aes(fill=region,x=density,weight=value),position="stack",color=NA,alpha=0.4) +
     scale_x_log10()} #%>% ggplotly()
 #1. Fix scale so that plot_ly shows original value. Also, stop scientific notation
 
