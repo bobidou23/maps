@@ -2,17 +2,17 @@ library(pacman)
 p_load(tigris, tidycensus, tidyverse, sf, plotly)
 #Documentation https://cran.r-project.org/web/packages/tidycensus/tidycensus.pdf
 
-newyork <- tracts("NY") %>% st_as_sf()
-newjersey <- tracts("NJ") %>% st_as_sf()
-connecticut <- tracts("CT") %>% st_as_sf()
+ny <- tracts("NY") %>% st_as_sf()
+nj <- tracts("NJ") %>% st_as_sf()
+ct <- tracts("CT") %>% st_as_sf()
 # california <- tracts("CA")
 # texas <- tracts("TX")
 # florida <- tracts("FL")
 
 census_api_key("blahblahblah", install=TRUE, overwrite=TRUE)
-newyork2 <- get_decennial(geography = "tract", variable="P001001", state="NY")
-newjersey2 <- get_decennial(geography = "tract", variable="P001001", state="NJ")
-connecticut2 <- get_decennial(geography = "tract", variable="P001001", state="CT")
+ny2 <- get_decennial(geography = "tract", variable="P001001", state="NY")
+nj2 <- get_decennial(geography = "tract", variable="P001001", state="NJ")
+ct2 <- get_decennial(geography = "tract", variable="P001001", state="CT")
 
 #County codes: https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697
 nyc_counties <- data.frame(county = c("36005", "36047", "36061", "36081", #Central city
@@ -60,7 +60,7 @@ nyc %>%
   #                            TRUE ~ density)) %>%
   ggplot() +
   geom_sf(aes(fill=density), size=0, alpha=0.6) +
-  scale_fill_gradientn(trans = "sqrt", colours = inlmisc::GetColors(256,start=0.3,end=1))
+  scale_fill_gradientn(trans = "sqrt", limits=c(0,900), colours = inlmisc::GetColors(256,start=0.3,end=1))
                          # rainbow(7, rev = TRUE, start=0, end=0.7))
                          # wes_palette("Zissou1", 7, type = "continuous"))
 
