@@ -60,7 +60,7 @@ nyc %>%
   #                            TRUE ~ density)) %>%
   ggplot() +
   geom_sf(aes(fill=density), size=0, alpha=0.6) +
-  scale_fill_gradientn(trans = "sqrt", limits=c(0,900), colours = inlmisc::GetColors(256,start=0.3,end=1))
+  scale_fill_gradientn(trans = "sqrt", limits=c(0,900), colours = inlmisc::GetColors(256,start=0.2,end=1))
                          # rainbow(7, rev = TRUE, start=0, end=0.7))
                          # wes_palette("Zissou1", 7, type = "continuous"))
 
