@@ -37,6 +37,11 @@ la <- left_join(ca1, ca2, by="GEOID") %>%
          density = value/ALAND*10000)
 
 p_load(inlmisc)
+sf %>%
+  # mutate(density = case_when(density < 1 ~ 1, TRUE ~ density)) %>%
+  ggplot() +
+  geom_sf(aes(fill=density), size=0, alpha=0.6) +
+  scale_fill_gradientn(trans = "sqrt", limits=c(0,900), colours = inlmisc::GetColors(256,start=0.2,end=1))
 la %>%
   # mutate(density = case_when(density < 1 ~ 1, TRUE ~ density)) %>%
   ggplot() +
@@ -48,3 +53,10 @@ la %>%
 {ggplot(la) + geom_density(aes(fill=region,x=density,weight=value),position="stack",color=NA,alpha=0.4) +
     scale_x_log10()} #%>% ggplotly()
 
+right_join(ca1, ca2, by="GEOID") %>%
+  mutate(county = paste0(STATEFP, COUNTYFP)) %>%
+  mutate(ALAND = as.numeric(ALAND),
+         AWATER = as.numeric(AWATER),
+         density = value/ALAND*10000) %>%
+  ggplot() + geom_density(aes(x=density,weight=ca2$value)) +
+  scale_x_sqrt()
