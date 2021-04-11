@@ -45,24 +45,24 @@ download.file(url, temp)
 unzip(temp)
 
 #Geography
-nyc <- rbind(left_join(ny1, ny2, by="GEOID"),
-                 left_join(nj1, nj2, by="GEOID"),
-                 left_join(ct1, ct2, by="GEOID")) %>%
+nyc <- rbind(left_join(ny, ny2, by="GEOID"),
+                 left_join(nj, nj2, by="GEOID"),
+                 left_join(ct, ct2, by="GEOID")) %>%
   mutate(county = paste0(STATEFP, COUNTYFP)) %>%
   filter(county %in% nyc_counties$county) %>%
   left_join(nyc_counties, by="county") %>%
   filter(value > 10) %>%
   mutate(ALAND = as.numeric(ALAND),
          AWATER = as.numeric(AWATER),
-         density = value/ALAND*10000)
+         density = value/ALAND*1000)
 
 p_load(wesanderson, inlmisc)
 nyc %>%
-  # mutate(density = case_when(density < 1 ~ 1,
+  # mutate(density = case_when(density < 50 ~ 50,
   #                            TRUE ~ density)) %>%
   ggplot() +
-  geom_sf(aes(fill=density), size=0, alpha=0.6) +
-  scale_fill_gradientn(trans = "sqrt", limits=c(0,900), colours = inlmisc::GetColors(256,start=0.2,end=1))
+  geom_sf(aes(fill=density), size=0, alpha=0.8) +
+  scale_fill_gradientn(trans = "sqrt", limits=c(0,50), colours = inlmisc::GetColors(256,start=0.2,end=1))
                          # rainbow(7, rev = TRUE, start=0, end=0.7))
                          # wes_palette("Zissou1", 7, type = "continuous"))
 

@@ -20,7 +20,6 @@ for (i in 1:47) {
   download.file(url, temp)
   unzip(temp)
 }
-setwd("~/Dropbox/Projects/maps")
 
 kanto <- rbind(read_sf("~/Desktop/Datasets/Japan/h27ka08.shp"),
                read_sf("~/Desktop/Datasets/Japan/h27ka09.shp"),
@@ -29,15 +28,16 @@ kanto <- rbind(read_sf("~/Desktop/Datasets/Japan/h27ka08.shp"),
                read_sf("~/Desktop/Datasets/Japan/h27ka12.shp"),
                read_sf("~/Desktop/Datasets/Japan/h27ka13.shp"),
                read_sf("~/Desktop/Datasets/Japan/h27ka14.shp"))%>%
-  mutate(density = JINKO/AREA*10000)
+  mutate(density = JINKO/AREA*1000)
+setwd("~/Dropbox/Projects/maps")
 
 kanto %>%
   filter(is.na(SITYO_NAME),
          JINKO > 0) %>%
-  mutate(density = case_when(density > 900 ~ 900, TRUE ~ density)) %>%
+  mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
   ggplot() +
-  geom_sf(aes(fill=density), size=0, alpha=0.6) +
-  scale_fill_gradientn(trans = "sqrt", limits=c(0,900), colours = inlmisc::GetColors(256,start=0.2,end=1))
+  geom_sf(aes(fill=density), size=0, alpha=0.8) +
+  scale_fill_gradientn(trans = "sqrt", limits=c(0,50), colours = inlmisc::GetColors(256,start=0.2,end=1))
 
 ja_lines <- st_read("~/Desktop/Datasets/ja_lines.shp")
 

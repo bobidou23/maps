@@ -25,27 +25,27 @@ setwd("~/Dropbox/Projects/maps")
 mtl <- mutate(can_da, "DAUID"=as.double(DAUID)) %>%
   left_join(can_da2, by=c("DAUID"="Geographic code")) %>%
   filter(CMANAME=="Montréal") %>%
-  mutate(density = `Population density per square kilometre, 2016`/100,
-         density = case_when(density > 900 ~ 900,
+  mutate(density = `Population density per square kilometre, 2016`/1000,
+         density = case_when(density > 50 ~ 50,
                              TRUE ~ density))
 
 toronto <- mutate(can_da, "DAUID"=as.double(DAUID)) %>%
   left_join(can_da2, by=c("DAUID"="Geographic code")) %>%
-  filter(CMANAME=="Toronto") %>%
-  mutate(density = `Population density per square kilometre, 2016`/100,
-         density = case_when(density > 900 ~ 900,
+  filter(CMANAME=="Toronto" | CMANAME=="Hamilton" | CMANAME=="Oshawa") %>%
+  mutate(density = `Population density per square kilometre, 2016`/1000,
+         density = case_when(density > 50 ~ 50,
                              TRUE ~ density))
 
 vancouver <- mutate(can_da, "DAUID"=as.double(DAUID)) %>%
   left_join(can_da2, by=c("DAUID"="Geographic code")) %>%
   filter(CMANAME=="Vancouver") %>%
-  mutate(density = `Population density per square kilometre, 2016`/100,
-         density = case_when(density > 900 ~ 900,
+  mutate(density = `Population density per square kilometre, 2016`/1000,
+         density = case_when(density > 50 ~ 50,
                              TRUE ~ density))
 
-ggplot(vancouver) +
-  geom_sf(aes(fill=density),size=0) +
-  scale_fill_gradientn(trans = "sqrt", limits=c(0,900), colours = inlmisc::GetColors(256,start=0.2,end=1))
+ggplot(toronto) +
+  geom_sf(aes(fill=density),size=0,alpha=0.8) +
+  scale_fill_gradientn(trans = "sqrt", limits=c(0,50), colours = inlmisc::GetColors(256,start=0.2,end=1))
 
 
 
