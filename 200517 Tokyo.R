@@ -1,5 +1,5 @@
 library(pacman)
-p_load(kokudosuuchi,rvest,tidyverse,sf)
+p_load(kokudosuuchi,rvest,tidyverse,sf,lwgeom)
 
 #Only town/ward level
 # url <- "https://www.esrij.com/cgi-bin/wp/wp-content/uploads/2020/05/japan_ver82.zip"
@@ -30,6 +30,7 @@ kanto <- rbind(read_sf("~/Desktop/Datasets/Japan/h27ka08.shp"),
                read_sf("~/Desktop/Datasets/Japan/h27ka13.shp"),
                read_sf("~/Desktop/Datasets/Japan/h27ka14.shp"))%>%
   mutate(density = JINKO/AREA*10000)
+
 kanto %>%
   filter(is.na(SITYO_NAME),
          JINKO > 0) %>%
@@ -38,14 +39,16 @@ kanto %>%
   geom_sf(aes(fill=density), size=0, alpha=0.6) +
   scale_fill_gradientn(trans = "sqrt", limits=c(0,900), colours = inlmisc::GetColors(256,start=0.2,end=1))
 
+ja_lines <- st_read("~/Desktop/Datasets/ja_lines.shp")
+
 #Testing out the st_area function
-# tokyo %>%
-#   mutate(area = as.numeric(st_area(geometry)),
-#          perc = area/ALAND) %>%
-#   # quantile(.$perc, 0.99, na.rm=TRUE)
-#   ggplot() +
-#   geom_density(aes(x=perc)) +
-#     xlim(.99998,1.00002)
+kanto %>%
+  mutate(area2 = as.numeric(st_area(geometry)),
+         perc = area2/AREA) %>%
+  # quantile(.$perc, 0.99, na.rm=TRUE)
+  ggplot() +
+  geom_density(aes(x=perc)) +
+    xlim(1,1.0004)
 
 #documentation: https://www.e-stat.go.jp/gis/statmap-search/data?datatype=2&serveyId=A002005212015&downloadType=1
 #reference https://www.e-stat.go.jp/gis/statmap-search?page=1&type=2&aggregateUnitForBoundary=A&toukeiCode=00200521&toukeiYear=2015&serveyId=A002005212015&coordsys=1&format=shape

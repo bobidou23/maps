@@ -9,6 +9,8 @@ ct <- tracts("CT") %>% st_as_sf()
 # texas <- tracts("TX")
 # florida <- tracts("FL")
 
+
+
 census_api_key("blahblahblah", install=TRUE, overwrite=TRUE)
 ny2 <- get_decennial(geography = "tract", variable="P001001", state="NY")
 nj2 <- get_decennial(geography = "tract", variable="P001001", state="NJ")
