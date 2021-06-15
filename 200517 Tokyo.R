@@ -28,15 +28,18 @@ for(i in 1:47) {
   mutate(density = JINKO/AREA*1000)
 setwd("~/Dropbox/Projects/maps")
 
-kanto <- filter(japan_geo, PREF_NAME %in% c("群馬県","栃木県","茨城県","埼玉県","千葉県","東京都","神奈川県")) %>%
+kanto <- filter(japan_geo, PREF_NAME %in% c("群馬県","栃木県","茨城県","埼玉県","千葉県","東京都","神奈川県","山梨県","静岡県")) %>%
   mutate(centroid = st_centroid(geometry),
          radius = as.numeric(st_distance(centroid,
                                          st_sfc(st_point(x = c(139.767, 35.682), dim = "XY"),crs=4612)))/1000,
-         areaclass = case_when(density == 0 ~ "Zero",
-                               density < 1.5 & density > 0 & radius < 50 ~ "Near low",
-                               density < 1.5 & density > 0 & radius > 50 ~ "Far low",
-                               density > 1.5 & radius > 50 ~ "Far medium",
-                               TRUE ~ "Near"))
+         category = case_when(PREF_NAME=="東京都"&str_sub(CITY_NAME,-1)=="区" ~ "Central",
+                              GST_NAME %in% c("川崎市","横浜市","相模原市","千葉市","さいたま市") ~ "Large city",
+                              CITY_NAME %in% c("水戸市","宇都宮市","前橋市","高崎市","川越市","川口市","越谷市",
+                                               "船橋市","柏市","八王子市","横須賀市") ~ "Secondary",
+                              CITY_NAME %in% c("つくば市","伊勢崎市","太田市","所沢市","草加市","春日部市","熊谷市",
+                                               "小田原市","大和市","平塚市","厚木市","茅ヶ崎市","沼津市") ~ "Tertiary",
+                              TRUE ~ "Small")) %>%
+  filter(radius < 120)
 
 kanto %>% #map
   filter(is.na(SITYO_NAME), #filters out distant islands in Tokyo Prefecture
@@ -48,29 +51,21 @@ kanto %>% #map
   # ylim(35,36.25) +
   scale_fill_gradientn(trans = "sqrt", limits=c(0,50), colours = inlmisc::GetColors(256,start=0.2,end=1))
 
-p_load(ggExtra)
 kanto %>% #dotplot
-  filter(is.na(SITYO_NAME)) %>%
+  mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
   ggplot() +
-  geom_point(aes(x=radius,y=density,size=JINKO,color=PREF),alpha=0.05) +
+  geom_point(aes(x=radius,y=density,size=JINKO,color=category),alpha=0.08) +
   # geom_hline(yintercept=1) +
   # geom_segment(aes(x=50,xend=50,y=1,yend=50)) +
   # scale_x_continuous(trans="sqrt") +
-  scale_y_continuous(trans="sqrt",limits=c(0,50))
+  scale_y_continuous(trans="sqrt",limits=c(0,50)) +
+  scale_color_manual(values=c("Central"="hotpink","Large city"="pink","Secondary"="orange",
+                              "Tertiary"="gold3","Small"="lightskyblue"))
 
-kanto %>% #dotplot
+kanto %>% #density
   filter(is.na(SITYO_NAME)) %>%
   ggplot() +
   geom_density(aes(y=density,weight=JINKO))
-
-kanto %>% #map
-  filter(is.na(SITYO_NAME)) %>% #filters out distant islands in Tokyo Prefecture
-  mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
-  ggplot() +
-  geom_sf(aes(fill=areaclass), size=0, alpha=0.6) +
-  # geom_circle(x0=139.767,y0=35.682,r=0.451) +
-  scale_fill_manual(values=c("Near"="orange","Far medium"="orange3",
-                             "Near low"="lightskyblue1","Far low"="lightskyblue3","Zero"="grey50"))
 
 geom_circle <- function(x0, y0, r, npoints=100, ...) {
   angles <- seq(-pi, pi, length.out=npoints)
@@ -85,74 +80,129 @@ geom_circle <- function(x0, y0, r, npoints=100, ...) {
 }
 
 ##KANSAI
-kansai <- filter(japan_geo, PREF_NAME %in% c("兵庫県","京都府","大阪府","滋賀県","和歌山県","奈良県")) %>%
+kansai <- filter(japan_geo, PREF_NAME %in% c("兵庫県","京都府","大阪府","滋賀県","和歌山県","奈良県","福井県","三重県")) %>%
   mutate(centroid = st_centroid(geometry),
          radius = as.numeric(st_distance(centroid,
-                                         st_sfc(st_point(x = c(135.495, 34.702), dim = "XY"),crs=4612)))/1000)
+                                         st_sfc(st_point(x = c(135.495, 34.702), dim = "XY"),crs=4612)))/1000,
+         category = case_when(GST_NAME=="大阪市" ~ "Central",
+                              GST_NAME %in% c("神戸市","堺市","京都市") ~ "Large city",
+                              CITY_NAME %in% c("大津市","高槻市","東大阪市","豊中市","枚方市","八尾市","寝屋川市","吹田市",
+                                               "和歌山市","奈良市","尼崎市","西宮市","明石市","姫路市") ~ "Secondary",
+                              CITY_NAME %in% c("茨木市","岸和田市","加古川市","宝塚市") ~ "Tertiary",
+                              TRUE ~ "Small")) %>%
+  filter(radius < 100)
 
 kansai %>% #map
-  filter(is.na(SITYO_NAME), #filters out distant islands in Tokyo Prefecture
-         JINKO > 0) %>% #filters out lakes, etc
+  filter(JINKO > 0) %>% #filters out lakes, etc
   mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
   ggplot() +
   geom_sf(aes(fill=density), size=0, alpha=0.8) +
   scale_fill_gradientn(trans = "sqrt", limits=c(0,50), colours = inlmisc::GetColors(256,start=0.2,end=1))
 
 kansai %>% #dotplot
-  filter(is.na(SITYO_NAME)) %>%
+  mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
   ggplot() +
-  geom_point(aes(x=radius,y=density,size=JINKO,color=PREF),alpha=0.05) +
+  geom_point(aes(x=radius,y=density,size=JINKO,color=category),alpha=0.08) +
   # geom_hline(yintercept=1) +
   # geom_segment(aes(x=50,xend=50,y=1,yend=50)) +
   # scale_x_continuous(trans="sqrt") +
-  scale_y_continuous(trans="sqrt",limits=c(0,50))
+  scale_y_continuous(trans="sqrt",limits=c(0,50)) +
+  scale_color_manual(values=c("Central"="hotpink","Large city"="pink","Secondary"="orange",
+                              "Tertiary"="gold3","Small"="lightskyblue"))
 
 ##NAGOYA
-nagoya <- filter(japan_geo, PREF_NAME %in% c("愛知県","岐阜県","三重県")) %>%
+nagoya <- filter(japan_geo, PREF_NAME %in% c("愛知県","岐阜県","三重県","滋賀県")) %>%
   mutate(centroid = st_centroid(geometry),
          radius = as.numeric(st_distance(centroid,
-                                         st_sfc(st_point(x = c(136.908,35.170), dim = "XY"),crs=4612)))/1000)
+                                         st_sfc(st_point(x = c(136.908,35.170), dim = "XY"),crs=4612)))/1000,
+         category = case_when(GST_NAME=="名古屋市" ~ "Central",
+                              CITY_NAME %in% c("岐阜市","豊田市","豊橋市","岡崎市","一宮市") ~ "Secondary",
+                              CITY_NAME %in% c("春日井市","四日市市") ~ "Tertiary",
+                              TRUE ~ "Small")) %>%
+  filter(radius < 50)
 
 nagoya %>% #map
-  filter(is.na(SITYO_NAME), #filters out distant islands in Tokyo Prefecture
-         JINKO > 0) %>% #filters out lakes, etc
+  filter(JINKO > 0) %>% #filters out lakes, etc
   mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
   ggplot() +
   geom_sf(aes(fill=density), size=0, alpha=0.8) +
   scale_fill_gradientn(trans = "sqrt", limits=c(0,50), colours = inlmisc::GetColors(256,start=0.2,end=1))
 
 nagoya %>% #dotplot
-  filter(is.na(SITYO_NAME)) %>%
+  mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
   ggplot() +
-  geom_point(aes(x=radius,y=density,size=JINKO,color=PREF),alpha=0.05) +
+  geom_point(aes(x=radius,y=density,size=JINKO,color=category),alpha=0.08) +
   # geom_hline(yintercept=1) +
   # geom_segment(aes(x=50,xend=50,y=1,yend=50)) +
   # scale_x_continuous(trans="sqrt") +
-  scale_y_continuous(trans="sqrt",limits=c(0,50))
+  scale_y_continuous(trans="sqrt",limits=c(0,50)) +
+  scale_color_manual(values=c("Central"="hotpink","Secondary"="orange",
+                              "Tertiary"="gold3","Small"="lightskyblue"))
 
 ##FUKUOKA
-fukuoka <- filter(japan_geo, PREF_NAME == "福岡県" | PREF_NAME == "佐賀県") %>%
+fukuoka <- filter(japan_geo, PREF_NAME %in% c("福岡県","佐賀県","山口県")) %>%
   mutate(centroid = st_centroid(geometry),
          radius = as.numeric(st_distance(centroid,
-                                         st_sfc(st_point(x = c(130.4,33.589), dim = "XY"),crs=4612)))/1000)
+                                         st_sfc(st_point(x = c(130.4,33.589), dim = "XY"),crs=4612)))/1000,
+         radius2 = as.numeric(st_distance(centroid,
+                                          st_sfc(st_point(x = c(130.882,33.886), dim = "XY"),crs=4612)))/1000,
+         category = case_when(GST_NAME=="福岡市" ~ "Central",
+                              GST_NAME=="北九州市" ~ "Large city",
+                              CITY_NAME %in% c("下関市","久留米市") ~ "Secondary",
+                              CITY_NAME %in% c("佐賀市") ~ "Tertiary",
+                              TRUE ~ "Small")) %>%
+  filter(radius < 50 | radius2 < 25)
 
 fukuoka %>% #map
-  filter(is.na(SITYO_NAME), #filters out distant islands in Tokyo Prefecture
-         JINKO > 0) %>% #filters out lakes, etc
+  filter(JINKO > 0) %>% #filters out lakes, etc
   mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
   ggplot() +
   geom_sf(aes(fill=density), size=0, alpha=0.8) +
   scale_fill_gradientn(trans = "sqrt", limits=c(0,50), colours = inlmisc::GetColors(256,start=0.2,end=1))
 
 fukuoka %>% #dotplot
-  filter(is.na(SITYO_NAME)) %>%
+  mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
   ggplot() +
-  geom_point(aes(x=radius,y=density,size=JINKO,color=PREF),alpha=0.05) +
+  geom_point(aes(x=radius,y=density,size=JINKO,color=category),alpha=0.08) +
   # geom_hline(yintercept=1) +
   # geom_segment(aes(x=50,xend=50,y=1,yend=50)) +
   # scale_x_continuous(trans="sqrt") +
-  scale_y_continuous(trans="sqrt",limits=c(0,50))
+  scale_y_continuous(trans="sqrt",limits=c(0,50)) +
+  scale_color_manual(values=c("Central"="hotpink","Large city"="pink","Secondary"="orange",
+                              "Tertiary"="gold3","Small"="lightskyblue"))
 
+
+##SENDAI
+sendai <- filter(japan_geo, PREF_NAME %in% c("宮城県")) %>%
+  mutate(centroid = st_centroid(geometry),
+         radius = as.numeric(st_distance(centroid,
+                                         st_sfc(st_point(x = c(140.88,38.259), dim = "XY"),crs=4612)))/1000,
+         category = case_when(GST_NAME=="仙台市" ~ "Central",
+                              TRUE ~ "Small")) %>%
+  filter(radius < 25)
+
+sendai %>% #map
+  filter(JINKO > 0) %>% #filters out lakes, etc
+  mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
+  ggplot() +
+  geom_sf(aes(fill=density), size=0, alpha=0.8) +
+  scale_fill_gradientn(trans = "sqrt", limits=c(0,50), colours = inlmisc::GetColors(256,start=0.2,end=1))
+
+#SAPPORO
+sapporo <- filter(japan_geo, PREF_NAME %in% c("北海道")) %>%
+  mutate(centroid = st_centroid(geometry),
+         radius = as.numeric(st_distance(centroid,
+                                         st_sfc(st_point(x = c(141.346,43.069), dim = "XY"),crs=4612)))/1000,
+         category = case_when(GST_NAME=="札幌市" ~ "Central",
+                              TRUE ~ "Small")) %>%
+  filter(radius < 50)
+
+sapporo %>% #map
+  filter(JINKO > 0) %>% #filters out lakes, etc
+  mutate(density = case_when(density > 50 ~ 50, TRUE ~ density)) %>%
+  ggplot() +
+  geom_sf(aes(fill=density), size=0, alpha=0.8) +
+  scale_fill_gradientn(trans = "sqrt", limits=c(0,50), colours = inlmisc::GetColors(256,start=0.2,end=1))
 
 ja_lines <- st_read("~/Desktop/Datasets/ja_lines.shp")
 
