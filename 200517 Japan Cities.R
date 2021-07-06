@@ -26,7 +26,7 @@ for(i in 1:47) {
   japan_geo <- rbind(japan_geo, read_sf(paste0("~/Desktop/Datasets/Japan/h27ka",sprintf("%02s", i),".shp")))
 } %>%
   mutate(density = JINKO/AREA*1000)
-setwd("~/Dropbox/Projects/maps")
+setwd("~/Desktop/Datasets/maps")
 
 kanto <- filter(japan_geo, PREF_NAME %in% c("群馬県","栃木県","茨城県","埼玉県","千葉県","東京都","神奈川県","山梨県","静岡県")) %>%
   mutate(centroid = st_centroid(geometry),
